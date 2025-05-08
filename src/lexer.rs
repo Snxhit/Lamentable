@@ -4,12 +4,17 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenList
 {
+    // Data Types
     Number(i32),
+    String(String),
     Identifier(String),
+    // Operations
     Plus,
     Equals,
+    // Keywords
     Let,
     Shout,
+    // Markers
     EOL,
     EOF,
 }
@@ -80,6 +85,25 @@ pub fn tokenize(input: &str) -> Vec<TokenList>
             {
                 tokens.push(TokenList::Equals);
                 chars.next();
+            }
+            '"' =>
+            {
+                chars.next();
+                let mut string_text = String::new();
+                while let Some(&st) = chars.peek()
+                {
+                    if st != '"'
+                    {
+                        string_text.push(st);
+                        chars.next();
+                    }
+                    else
+                    {
+                        chars.next();
+                        break;
+                    }
+                }
+                tokens.push(TokenList::String(string_text));
             }
 
             _ =>

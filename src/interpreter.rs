@@ -22,15 +22,22 @@ impl Interpreter
         {
             match node
             {
-                ASTNode::ShoutStatement { text } =>
+                ASTNode::ShoutStatement { val, ident } =>
                 {
-                    if let Some(val) = self.variables.get(&text)
+                    if ident
                     {
-                        println!("{}", val);
+                        if let Some(val) = self.variables.get(&val)
+                        {
+                            println!("{}", val);
+                        }
+                        else
+                        {
+                            panic!("Provided identifier was not a valid variable name, please consider encasing it in double quotes!")
+                        }
                     }
                     else
                     {
-                        println!("{}", text);
+                        println!("{}", val);
                     }
                 }
 

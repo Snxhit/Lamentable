@@ -36,18 +36,26 @@ impl Parser
                 {
                     self.advance();
 
-                    let text = if let Some(TokenList::Identifier(text)) = self.current()
+                    let mut identbool;
+                    let val = match self.current().cloned()
                     {
-                        let t = text.clone();
-                        self.advance();
-                        t
-                    }
-                    else
-                    {
-                        panic!("Expected identifier (Text) after 'shout'!");
+                        Some(TokenList::String(s)) =>
+                        {
+                            self.advance();
+                            identbool = false;
+                            s
+                        }
+                        Some(TokenList::Identifier(t)) =>
+                        {
+                            self.advance();
+                            identbool = true;
+                            t
+                        }
+                        _ => panic!("Identifier (var) or String (text) expected after shout!"),
                     };
 
-                    nodes.push(ASTNode::ShoutStatement { text } );
+
+                    nodes.push(ASTNode::ShoutStatement { val, ident: identbool } );
                 }
 
                 TokenList::Let =>
