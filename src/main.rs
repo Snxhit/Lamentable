@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::panic;
 
 mod lexer;
 mod parser;
@@ -11,6 +12,23 @@ use parser::Parser;
 use interpreter::Interpreter;
 
 fn main() {
+// CENTRALIZED ERROR HANDLER
+    panic::set_hook(Box::new(|info|
+    {
+        if let Some(s) = info.payload().downcast_ref::<&str>()
+        {
+            eprintln!("{}", s);
+        }
+        else if let Some(s) = info.payload().downcast_ref::<String>()
+        {
+            eprintln!("{}", s);
+        }
+        else
+        {
+            eprintln!("Something went wrong :(");
+        }
+    }));
+
 // UNCOMMENT FOR PRODUCTION
 /*    let args: Vec<String> = env::args().collect();
     let source = fs::read_to_string(&args[1])
@@ -25,10 +43,11 @@ fn main() {
 //        println!("{:?}", token);
     }
 
+    let mut interpreter = Interpreter::new();
+
     let mut parser = Parser::new(tokens);
     let AST = parser.parse();
 //    println!("{:?}", ast);
  
-    let mut interpreter = Interpreter::new();
     interpreter.interpret(AST);
 }

@@ -5,16 +5,22 @@
 pub enum TokenList
 {
     // Data Types
-    Number(i32),
+    Number(f64),
     String(String),
     Identifier(String),
     // Operations
     Plus,
+    Sub,
+    Mult,
+    Div,
     Equals,
     // Keywords
     Let,
+    Const,
     Shout,
     // Markers
+    BracketL,
+    BracketR,
     EOL,
     EOF,
 }
@@ -35,6 +41,31 @@ pub fn tokenize(input: &str) -> Vec<TokenList>
             '+' =>
             {
                 tokens.push(TokenList::Plus);
+                chars.next();
+            }
+            '-' =>
+            {
+                tokens.push(TokenList::Sub);
+                chars.next();
+            }
+            '*' =>
+            {
+                tokens.push(TokenList::Mult);
+                chars.next();
+            }
+            '/' =>
+            {
+                tokens.push(TokenList::Div);
+                chars.next();
+            }
+            '(' =>
+            {
+                tokens.push(TokenList::BracketR);
+                chars.next();
+            }
+            ')' =>
+            {
+                tokens.push(TokenList::BracketL);
                 chars.next();
             }
             ',' =>
@@ -61,6 +92,7 @@ pub fn tokenize(input: &str) -> Vec<TokenList>
                 {
                     "shout" => tokens.push(TokenList::Shout),
                     "let" => tokens.push(TokenList::Let),
+                    "const" => tokens.push(TokenList::Const),
                     _ => tokens.push(TokenList::Identifier(ident)),
                 }
             }
@@ -73,6 +105,25 @@ pub fn tokenize(input: &str) -> Vec<TokenList>
                     {
                         num.push(ch);
                         chars.next();
+
+                    }
+                    else if ch == '.'
+                    {
+                        num.push('.');
+                        chars.next();
+
+/*                        while let Some(&d_ch) = chars.peek()
+                        {
+                            if d_ch.is_digit(10)
+                            {
+                                num.push(ch);
+                                chars.next();
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }*/
                     }
                     else
                     {
