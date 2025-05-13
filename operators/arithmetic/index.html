@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>arithmetic - Lamentable Docs</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "arithmetic";
+        var mkdocs_page_input_path = "operators/arithmetic.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Lamentable Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Info</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/">About</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Keywords</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../keywords/shout/">shout</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../keywords/let/">let</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../keywords/const/">const</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Operators</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">arithmetic</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#summary">🔹 Summary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">🔍 Syntax</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Lamentable Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Operators</li>
+      <li class="breadcrumb-item active">arithmetic</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="arithmetic"><code>arithmetic</code></h1>
+<h2 id="summary">🔹 Summary</h2>
+<p>Currently, there are four different arithmetic operators implemented. Then, there is also a special operator used to determine order.<br />
+<strong>Follows the rules of BODMAS/PEMDAS</strong></p>
+<blockquote>
+<p>+ (Add)<br />
+- (Substract)<br />
+* (Multiply)<br />
+/ (Divide)<br />
+( ) (Round brackets are used to determine order of evaluation of the expression.)</p>
+<p>TLDR: Arithmetic is the art of messing around with numbers.</p>
+</blockquote>
+<hr />
+<h2 id="syntax">🔍 Syntax</h2>
+<pre><code class="language-Lamentable">value1 operator1 value2,
+</code></pre>
+<ul>
+<li>Where all values are <code>integer</code>.</li>
+<li>Where operator1 is <code>+</code>, <code>-</code>, <code>*</code>, or <code>/</code>.</li>
+</ul>
+<hr />
+<p><strong><em>Examples:</em></strong></p>
+<pre><code class="language-Lamentable">1 + 2
+3 * 384 / 192
+(29 + 6) / 5
+(2 * 2 * 2) + 2
+</code></pre>
+<p><strong><em>Output</em>:</strong></p>
+<pre><code class="language-Lamentable">3
+6
+7
+10
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../keywords/const/" class="btn btn-neutral float-left" title="const"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../keywords/const/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
