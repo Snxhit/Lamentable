@@ -1,9 +1,9 @@
 name: Rust
 
 on:
-  workflow_dispatch:  # allows manual trigger
+  workflow_dispatch:
   push:
-    branches: [ "ci-builds" ]
+    branches: [ "build" ]
 
 env:
   CARGO_TERM_COLOR: always
