@@ -1,11 +1,9 @@
 name: Rust
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # allows manual trigger
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "ci-builds" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -13,7 +11,15 @@ env:
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
     - uses: actions/checkout@v4
+
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --release --verbose
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: lamentable-macos
+        path: target/release/lamentable
