@@ -1,25 +1,41 @@
-name: Rust
+name: Build MacOS Binary and Push to Build Branch
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "build" ]
+    branches: [ main ]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-and-push:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout main branch code
+      uses: actions/checkout@v4
+      with:
+        ref: main
 
-    - name: Build
+    - name: Build macOS binary
       run: cargo build --release --verbose
 
-    - name: Upload binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: lamentable-macos
-        path: target/release/lamentable
+    - name: Upload binary to build branch
+      run: |
+        git config --global user.email "ci@github.com"
+        git config --global user.name "GitHub CI"
+
+        # Clone the build branch into a separate folder
+        git clone https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }} build-branch
+        cd build-branch
+        git checkout build || git checkout -b build
+
+        # Clean old files and copy new binary
+        rm -rf *
+        cp ../target/release/lamentable ./lamentable-macos
+
+        # Commit and push
+        git add .
+        git commit -m "Build from ${{ github.sha }}"
+        git push origin build
