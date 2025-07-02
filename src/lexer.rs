@@ -8,16 +8,20 @@ pub enum TokenList
     Number(f64),
     String(String),
     Identifier(String),
+    Boolean(bool),
     // Operations
     Plus,
     Sub,
     Mult,
     Div,
     Equals,
+    Comparison,
+    NEComparison,
     // Keywords
     Let,
     Const,
     Shout,
+    If,
     // Markers
     BracketL,
     BracketR,
@@ -93,6 +97,9 @@ pub fn tokenize(input: &str) -> Vec<TokenList>
                     "shout" => tokens.push(TokenList::Shout),
                     "let" => tokens.push(TokenList::Let),
                     "const" => tokens.push(TokenList::Const),
+                    "if" => tokens.push(TokenList::If),
+                    "True" => tokens.push(TokenList::Boolean(true)),
+                    "False" => tokens.push(TokenList::Boolean(false)),
                     _ => tokens.push(TokenList::Identifier(ident)),
                 }
             }
@@ -134,8 +141,36 @@ pub fn tokenize(input: &str) -> Vec<TokenList>
             }
             '=' =>
             {
-                tokens.push(TokenList::Equals);
                 chars.next();
+                if let Some(&e) = chars.peek()
+                {
+                    if e == '='
+                    {
+                        chars.next();
+                        tokens.push(TokenList::Comparison);
+                    }
+                    else
+                    {
+                        tokens.push(TokenList::Equals);
+                    }
+                }
+                chars.next();
+            }
+            '!' =>
+            {
+                chars.next();
+                if let Some(&e) = chars.peek()
+                {
+                    if e == '='
+                    {
+                        chars.next();
+                        tokens.push(TokenList::NEComparison);
+                    }
+                    else
+                    {
+                        panic!("Unidentified token '!'!");
+                    }
+                }
             }
             '"' =>
             {

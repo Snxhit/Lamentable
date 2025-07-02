@@ -1,5 +1,6 @@
 use crate::lexer::TokenList;
 use crate::ast::ASTNode;
+//use crate::parser::Parser as NestedParser;
 use crate::interpreter::Interpreter;
 use std::collections::HashMap;
 
@@ -9,18 +10,20 @@ pub struct Parser
     pos: usize,
     strings: HashMap<String, (String, bool)>,
     floats: HashMap<String, (f64, bool)>,
+    bools: HashMap<String, (String, bool)>,
 }
 
 impl Parser
 {
-    pub fn new(tokens: Vec<TokenList>) -> Self
+    pub fn new(tokens: Vec<TokenList>, strings: HashMap<String, (String, bool)>, floats: HashMap<String, (f64, bool)>, bools: HashMap<String, (String, bool)>) -> Self
     {
         Self
         {
             tokens,
             pos: 0,
-            strings: HashMap::new(),
-            floats: HashMap::new(),
+            strings,
+            floats,
+            bools,
         }
     }
 
@@ -43,6 +46,7 @@ impl Parser
                     result -= self.parse_term();
                 }
                 TokenList::EOL | TokenList::BracketL => break,
+
                 _ => panic!("Unexpected token in math expression: {:?}!", token),
             }
         }
@@ -147,6 +151,7 @@ impl Parser
 
     pub fn parse(&mut self) -> Vec<ASTNode>
     {
+//       println!("Parsing session has started -------------");
         let mut nodes = Vec::new();
 
         while let Some(token) = self.current()
@@ -231,7 +236,7 @@ impl Parser
 
                     match datatype.as_str()
                     {
-                        "string" =>
+                        "str" =>
                         {
                             val = if let Some(TokenList::String(val)) = self.current()
                             {
@@ -241,11 +246,11 @@ impl Parser
                             }
                             else
                             {
-                                panic!("String or Integer expected after equals!");
+                                panic!("String, integer or boolean expected after equals!");
                             }
                         }
 
-                        "integer" =>
+                        "num" =>
                         {
                             let token = self.current().cloned();
                             val = match token
@@ -258,12 +263,30 @@ impl Parser
                             }
                         }
 
+                        "bool" =>
+                        {
+                            val = if let Some(TokenList::Boolean(x)) = self.current()
+                            {
+                                let t = x.clone();
+                                self.advance();
+                                match t
+                                {
+                                    true => "True".to_string(),
+                                    false => "False".to_string(),
+                                }
+                            }
+                            else
+                            {
+                                panic!("String, integer or boolean expected after equals!");
+                            }
+                        }
+
                         _ => panic!("Unknown datatype"),
                     }
 
                     if let Ok(num) = val.parse::<f64>()
                     {
-                        if self.strings.get(&name).is_none()
+                        if self.strings.get(&name).is_none() && self.bools.get(&name).is_none()
                         {
                             if self.floats.get(&name).is_some()
                             {
@@ -280,13 +303,13 @@ impl Parser
                         }
                         else
                         {
-                            panic!("{} is already a variable with the datatype {}!", name, datatype);
+                            panic!("{} is already a variable with another datatype!", name);
                         }
                     }
 
                     if let Err(_) = val.parse::<f64>()
                     {
-                        if self.floats.get(&name).is_none()
+                        if self.floats.get(&name).is_none() && self.bools.get(&name).is_none()
                         {
                             if self.strings.get(&name).is_some()
                             {
@@ -298,7 +321,14 @@ impl Parser
                             }
                             else
                             {
-                                self.strings.insert(name.clone(), (val.clone(), false));
+                                if val == "True".to_string() || val == "False"
+                                {
+                                    self.bools.insert(name.clone(), (val.clone(), false));
+                                }
+                                else
+                                {
+                                    self.strings.insert(name.clone(), (val.clone(), false));
+                                }
                             }
                         }
                         else
@@ -322,7 +352,7 @@ impl Parser
                     }
                     else
                     {
-                        panic!("Expected type of variable after 'let'!");
+                        panic!("Expected type of constant after 'let'!");
                     };
 
                     let name = if let Some(TokenList::Identifier(name)) = self.current()
@@ -346,7 +376,7 @@ impl Parser
 
                     match datatype.as_str()
                     {
-                        "string" =>
+                        "str" =>
                         {
                             val = if let Some(TokenList::String(val)) = self.current()
                             {
@@ -360,7 +390,7 @@ impl Parser
                             }
                         }
 
-                        "integer" =>
+                        "num" =>
                         {
                             let token = self.current().cloned();
                             val = match token
@@ -373,18 +403,44 @@ impl Parser
                             }
                         }
 
+                        "bool" =>
+                        {
+                            val = if let Some(TokenList::Boolean(x)) = self.current()
+                            {
+                                let t = x.clone();
+                                self.advance();
+                                match t
+                                {
+                                    true =>
+                                    {
+                                        self.bools.insert(name.clone(), ("True".to_string(), true));
+                                        "True".to_string()
+                                    }
+                                    false =>
+                                    {
+                                        self.bools.insert(name.clone(), ("False".to_string(), true));
+                                        "False".to_string()
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                panic!("String, integer or boolean expected after equals!");
+                            }
+
+                        }
                         _ => panic!("Unknown datatype"),
                     }
 
                     if let Ok(num) = val.parse::<f64>()
                     {
-                        if self.strings.get(&name).is_none() && self.floats.get(&name).is_none()
+                        if self.strings.get(&name).is_none() && self.floats.get(&name).is_none() && self.bools.get(&name).is_none()
                         {
                             self.floats.insert(name.clone(), (num, true));
                         }
-                        else if self.strings.get(&name).is_some()
+                        else if self.strings.get(&name).is_some() || self.bools.get(&name).is_some()
                         {
-                            panic!("{} is already a variable with the datatype {}!", name, datatype);
+                            panic!("{} is already a variable with a different datatype!", name);
                         }
                         else if self.floats.get(&name).is_some()
                         {
@@ -394,13 +450,13 @@ impl Parser
 
                     if let Err(_) = val.parse::<f64>()
                     {
-                        if self.floats.get(&name).is_none() && self.strings.get(&name).is_none()
+                        if self.floats.get(&name).is_none() && self.strings.get(&name).is_none() && self.strings.get(&name).is_none()
                         {
                             self.strings.insert(name.clone(), (val.clone(), true));
                         }
-                        else if self.floats.get(&name).is_some()
+                        else if self.floats.get(&name).is_some() || self.bools.get(&name).is_some()
                         {
-                            panic!("{} is already a variable with the datatype {}!", name, datatype);
+                            panic!("{} is already a variable with a different datatype!", name);
                         }
                         else if self.strings.get(&name).is_some()
                         {
@@ -409,6 +465,289 @@ impl Parser
                     }
 
                     nodes.push(ASTNode::ConstStatement {datatype, name, val} );
+                }
+
+                TokenList::If =>
+                {
+                    self.advance();
+
+                    let temptoken = self.current().cloned();
+                    let eval = if let Some(TokenList::BracketR) = temptoken
+                    {
+                        self.advance();
+
+                        let temptoken = self.current().cloned();
+                        if let Some(TokenList::Boolean(x)) = temptoken
+                        {
+                            self.advance();
+
+                            let temptoken = self.current().cloned();
+                            if let Some(TokenList::BracketL) = temptoken
+                            {
+                                self.advance();
+                                x
+                            }
+                            else
+                            {
+                                panic!("Expected ')' after opening '(' brackets for if statement conditionals!");
+                            }
+                        }
+                        else if let Some(TokenList::Identifier(name)) = temptoken
+                        {
+                            self.advance();
+                            if self.bools.get(&name).is_some()
+                            {
+                                let temptoken = self.current().cloned();
+                                if Some(TokenList::Comparison) == temptoken
+                                {
+                                    self.advance();
+                                    let temptoken = self.current().cloned();
+                                    if let Some(TokenList::Boolean(b)) = temptoken
+                                    {
+                                        self.advance();
+                                        self.advance();
+                                        self.bools.get(&name).unwrap().0.to_lowercase() == b.to_string()
+                                    }
+                                    else
+                                    {
+                                        panic!("The provided value in the boolean field is not a valid boolean!");
+                                    }
+                                }
+                                else if Some(TokenList::NEComparison) == temptoken
+                                {
+                                    self.advance();
+                                    let temptoken = self.current().cloned();
+                                    if let Some(TokenList::Boolean(b)) = temptoken
+                                    {
+                                        self.advance();
+                                        self.advance();
+                                        self.bools.get(&name).unwrap().0.to_lowercase() != b.to_string()
+                                    }
+                                    else
+                                    {
+                                        panic!("The provided value in the boolean field is not a valid boolean!");
+                                    }
+                                }
+                                else
+                                {
+                                    panic!("Comparison operator expected after identifier!");
+                                }
+                            }
+                            else if self.floats.get(&name).is_some()
+                            {
+                                let temptoken = self.current().cloned();
+                                if Some(TokenList::Comparison) == temptoken
+                                {
+                                    self.advance();
+                                    let temptoken = self.current().cloned();
+                                    if let Some(TokenList::Number(n)) = temptoken
+                                    {
+                                        self.replace_identifiers();
+                                        let val = self.parse_math_expr();
+                                        while true
+                                        {
+                                            let temptoken = self.current().cloned();
+                                            if temptoken == Some(TokenList::BracketR)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                self.advance();
+                                            }
+                                        }
+                                        self.floats.get(&name).unwrap().0 == val
+                                    }
+                                    else if let Some(TokenList::Identifier(x)) = temptoken
+                                    {
+                                        self.replace_identifiers();
+                                        let val = self.parse_math_expr();
+                                        while true
+                                        {
+                                            let temptoken = self.current().cloned();
+                                            if temptoken == Some(TokenList::BracketR)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                self.advance();
+                                            }
+                                        }
+                                        self.floats.get(&name).unwrap().0 == val
+                                    }
+                                    else if let Some(TokenList::BracketR) = temptoken
+                                    {
+                                        self.replace_identifiers();
+                                        let val = self.parse_math_expr();
+                                        while true
+                                        {
+                                            let temptoken = self.current().cloned();
+                                            if temptoken == Some(TokenList::BracketR)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                self.advance();
+                                            }
+                                        }
+                                        self.floats.get(&name).unwrap().0 == val
+                                    }
+                                    else
+                                    {
+                                        panic!("The provided value in the integer field is not a valid integer!")
+                                    }
+                                }
+                                else if Some(TokenList::NEComparison) == temptoken
+                                {
+                                    self.advance();
+                                    let temptoken = self.current().cloned();
+                                    if let Some(TokenList::Number(n)) = temptoken
+                                    {
+                                        self.advance();
+                                        self.advance();
+                                        self.floats.get(&name).unwrap().0 != n
+                                    }
+                                    else
+                                    {
+                                        panic!("The provided value in the integer field is not a valid integer!")
+                                    }
+                                }
+                                else
+                                {
+                                    panic!("Comparison operator expected after identifier");
+                                }
+                            }
+                            else if self.strings.get(&name).is_some()
+                            {
+                                let temptoken = self.current().cloned();
+                                if Some(TokenList::Comparison) == temptoken
+                                {
+                                    self.advance();
+                                    let temptoken = self.current().cloned();
+                                    if let Some(TokenList::String(s)) = temptoken
+                                    {
+                                        self.advance();
+                                        self.advance();
+                                        self.strings.get(&name).unwrap().0 == s
+                                    }
+                                    else
+                                    {
+                                        panic!("The provided value is not a valid string!");
+                                    }
+                                }
+                                else if Some(TokenList::NEComparison) == temptoken
+                                {
+                                    self.advance();
+                                    let temptoken = self.current().cloned();
+                                    if let Some(TokenList::String(s)) = temptoken
+                                    {
+                                        self.advance();
+                                        self.advance();
+                                        self.strings.get(&name).unwrap().0 != s
+                                    }
+                                    else
+                                    {
+                                        panic!("The provided value is not a valid string!");
+                                    }
+                                }
+                                else
+                                {
+                                    panic!("Comparison expected after if statement!");
+                                }
+                            }
+                            else
+                            {
+                                panic!("Provided identifier is not a valid variable name!");
+                            }
+                        }
+                        else
+                        {
+                            panic!("Boolean value expected as if statement conditional!");
+                        }
+                    }
+                    else
+                    {
+                        panic!("Opening bracket '(' expected after if keyword!");
+                    };
+                    if eval
+                    {
+                        let temptoken = self.current().cloned();
+                        let loop_tokens = if let Some(TokenList::BracketR) = temptoken
+                        {
+                            let mut nest_number = 0;
+                            let mut loop_data = Vec::new();
+                            self.advance();
+                            while true
+                            {
+                                let temptoken = self.current().cloned();
+//                                println!("{:?}", temptoken.clone().unwrap());
+                                match temptoken
+                                {
+                                    Some(TokenList::BracketR) =>
+                                    {
+                                        loop_data.push(TokenList::BracketR);
+                                        nest_number = nest_number + 1;
+                                    }
+                                    Some(TokenList::BracketL) =>
+                                    {
+                                        if nest_number != 0
+                                        {
+                                            nest_number = nest_number - 1;
+                                            loop_data.push(TokenList::BracketL);
+                                        }
+                                        else if nest_number == 0
+                                        {
+//                                            self.advance();
+//                                            loop_data.push(TokenList::BracketL);
+                                            break;
+                                        }
+                                    },
+                                    Some(token) =>
+                                    {
+                                        loop_data.push(token);
+                                    },
+                                    None => {}
+                                }
+                                self.advance();
+                            }
+
+                            self.advance();
+                            loop_data
+                        }
+                        else
+                        {
+                            panic!("Opening bracket '(' expected at the start of if block!");
+                        };
+
+                        use crate::parser::Parser as NestedParser;
+                        for token in &loop_tokens
+                        {
+//                            println!("{:?}", token);
+                        }
+                        let mut parser = NestedParser::new(loop_tokens, self.strings.clone(), self.floats.clone(), self.bools.clone());
+                        let loop_AST = parser.parse();
+
+                        nodes.push(ASTNode::IfStatement{ tree: loop_AST });
+
+/*                        use crate::interpreter::Interpreter;
+                        let mut interpreter = Interpreter::new();
+                        interpreter.interpret(loop_AST);*/
+
+                    }
+                    else
+                    {
+                        while true
+                        {
+                            if let Some(TokenList::BracketL) = self.current()
+                            {
+                                break;
+                            }
+                            self.advance();
+                        }
+                        self.advance();
+                    }
                 }
 
                 TokenList::EOL =>
@@ -428,6 +767,7 @@ impl Parser
             }
         }
 
+//        println!("Parsing session has ended -------------");
         nodes
     }
 }

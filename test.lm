@@ -1,4 +1,1 @@
-shout "hello world!"
-let x = 293
-shout "xz"
-shout x
+

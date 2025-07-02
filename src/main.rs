@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::panic;
+use std::collections::HashMap;
 
 mod lexer;
 mod parser;
@@ -30,12 +31,12 @@ fn main() {
     }));
 
 // UNCOMMENT FOR PRODUCTION
-/*    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
     let source = fs::read_to_string(&args[1])
-        .expect("Failed to read Lamentable (.lm) file!");*/
-
-    let source = fs::read_to_string("main.lm")
         .expect("Failed to read Lamentable (.lm) file!");
+
+/*    let source = fs::read_to_string("main.lm")
+        .expect("Failed to read Lamentable (.lm) file!");*/
 
     let tokens = tokenize(&source);
     for token in &tokens
@@ -43,9 +44,9 @@ fn main() {
 //        println!("{:?}", token);
     }
 
-    let mut interpreter = Interpreter::new();
+    let mut interpreter = Interpreter::new(HashMap::new(), HashMap::new(), HashMap::new());
 
-    let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens, HashMap::new(), HashMap::new(), HashMap::new());
     let AST = parser.parse();
 //    println!("{:?}", ast);
  
