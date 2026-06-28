@@ -22,8 +22,18 @@ impl<'a> Lexer<'a> {
                 '+' => tokens.push(Token::Plus),
 
                 '0'..='9' => {
-                    let val = ch.to_digit(10).unwrap() as i64;
-                    tokens.push(Token::Number(val));
+                    let mut num_str = ch.to_string();
+
+                    while let Some(&next_ch) = self.chars.peek() {
+                        if next_ch.is_ascii_digit() {
+                            num_str.push(self.chars.next().unwrap());
+                        } else {
+                            break;
+                        }
+                    }
+
+                    let val = num_str.parse::<i64>().unwrap();
+                    tokens.push(Token::Number((val)));
                 }
 
                 _ => panic!("Lexing Error: Unknown character {}", ch),
