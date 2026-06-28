@@ -32,8 +32,8 @@ impl<'a> Lexer<'a> {
                         }
                     }
 
-                    let val = num_str.parse::<i64>().unwrap();
-                    tokens.push(Token::Number((val)));
+                    let val = num_str.parse::<f64>().unwrap();
+                    tokens.push(Token::Number(val));
                 }
 
                 _ => panic!("Lexing Error: Unknown character {}", ch),
